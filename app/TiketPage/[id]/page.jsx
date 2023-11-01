@@ -1,4 +1,4 @@
-import TicketFrom from "@/app/(components)/TicketFrom";
+import TicketFrom from "../../(components)/TicketFrom";
 
 const TicketPage = ({ params }) => {
   return <TicketFrom />;
