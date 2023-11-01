@@ -6,30 +6,6 @@ import React, { useState } from "react";
 const TicketFrom = ({ ticket }) => {
   const EDITMODE = ticket._id === "new" ? false : true;
   const router = useRouter();
-  const handleChange = (e) => {
-    const value = e.target.value;
-    const name = e.target.name;
-
-    setFromData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const res = await fetch("/api/Tickets", {
-      method: "POST",
-      body: JSON.stringify({ fromData }),
-      "content-type": "application/json",
-    });
-    if (!res.ok) {
-      throw new Error("Failed to create Ticket.");
-    }
-    router.refresh();
-    router.push("/");
-  };
-
   const startingTicketData = {
     title: "",
     description: "",
@@ -42,21 +18,69 @@ const TicketFrom = ({ ticket }) => {
   if (EDITMODE) {
     startingTicketData["title"] = ticket.title;
     startingTicketData["description"] = ticket.description;
-    startingTicketData["category"] = ticket.category;
     startingTicketData["priority"] = ticket.priority;
+    startingTicketData["progress"] = ticket.progress;
     startingTicketData["status"] = ticket.status;
+    startingTicketData["category"] = ticket.category;
   }
 
-  const [fromData, setFromData] = useState(startingTicketData);
+  const [formData, setFormData] = useState(startingTicketData);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    const name = e.target.name;
+
+    setFormData((preState) => ({
+      ...preState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (EDITMODE) {
+      const res = await fetch(`/api/Tickets/${ticket._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({ formData }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update ticket");
+      }
+    } else {
+      const res = await fetch("/api/Tickets", {
+        method: "POST",
+        body: JSON.stringify({ formData }),
+        //@ts-ignore
+        "Content-Type": "application/json",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to create ticket");
+      }
+    }
+
+    router.refresh();
+    router.push("/");
+  };
+
+  const categories = [
+    "Hardware Problem",
+    "Software Problem",
+    "Application Deveopment",
+    "Project",
+  ];
 
   return (
-    <div className="flex justify-center">
+    <div className=" flex justify-center">
       <form
-        className="flex flex-col gap-3 w-1/2"
-        method="post"
         onSubmit={handleSubmit}
+        method="post"
+        className="flex flex-col gap-3 w-1/2"
       >
-        <h3>{EDITMODE ? "Update Your Ticket" : "Create Your Ticket"}</h3>
+        <h3>{EDITMODE ? "Update Your Ticket" : "Create New Ticket"}</h3>
         <label>Title</label>
         <input
           id="title"
@@ -64,7 +88,7 @@ const TicketFrom = ({ ticket }) => {
           type="text"
           onChange={handleChange}
           required={true}
-          value={fromData.title}
+          value={formData.title}
         />
         <label>Description</label>
         <textarea
@@ -72,64 +96,67 @@ const TicketFrom = ({ ticket }) => {
           name="description"
           onChange={handleChange}
           required={true}
-          value={fromData.description}
+          value={formData.description}
           rows="5"
         />
         <label>Category</label>
         <select
           name="category"
-          value={fromData.category}
+          value={formData.category}
           onChange={handleChange}
         >
-          <option value="Hardware Problem">Hardware Problem</option>
-          <option value="Software Problem">Software Problem</option>
-          <option value="Project">Project</option>
+          {categories?.map((category, _index) => (
+            <option key={_index} value={category}>
+              {category}
+            </option>
+          ))}
         </select>
+
         <label>Priority</label>
         <div>
           <input
-            type="radio"
             id="priority-1"
             name="priority"
+            type="radio"
             onChange={handleChange}
             value={1}
-            checked={fromData.priority == 1}
+            checked={formData.priority == 1}
           />
           <label>1</label>
           <input
-            type="radio"
             id="priority-2"
             name="priority"
+            type="radio"
             onChange={handleChange}
             value={2}
-            checked={fromData.priority == 2}
+            checked={formData.priority == 2}
           />
           <label>2</label>
           <input
-            type="radio"
             id="priority-3"
             name="priority"
+            type="radio"
             onChange={handleChange}
             value={3}
-            checked={fromData.priority == 3}
+            checked={formData.priority == 3}
           />
           <label>3</label>
           <input
-            type="radio"
             id="priority-4"
             name="priority"
+            type="radio"
             onChange={handleChange}
             value={4}
-            checked={fromData.priority == 4}
+            checked={formData.priority == 4}
           />
           <label>4</label>
           <input
-            type="radio"
             id="priority-5"
             name="priority"
+            type="radio"
             onChange={handleChange}
             value={5}
-            checked={fromData.priority == 5}
+            checked={formData.priority == 5}
           />
           <label>5</label>
         </div>
@@ -138,21 +165,21 @@ const TicketFrom = ({ ticket }) => {
           type="range"
           id="progress"
           name="progress"
-          value={FormData.progress}
+          value={formData.progress}
           min="0"
           max="100"
           onChange={handleChange}
         />
         <label>Status</label>
-        <select name="status" value={fromData.status} onChange={handleChange}>
+        <select name="status" value={formData.status} onChange={handleChange}>
           <option value="not started">Not Started</option>
           <option value="started">Started</option>
           <option value="done">Done</option>
         </select>
         <input
           type="submit"
-          className="btn"
-          value={EDITMODE ? "Update Your Ticket" : "Create Your Ticket"}
+          className="btn max-w-xs"
+          value={EDITMODE ? "Update Ticket" : "Create Ticket"}
         />
       </form>
     </div>

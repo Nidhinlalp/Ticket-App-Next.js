@@ -1,25 +1,31 @@
 import TicketFrom from "../../(components)/TicketFrom";
 
 const getTicketById = async (id) => {
-  const res = await fetch(`http://localhost:3000/api/Tickets/${id}`, {
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(`http://localhost:3000/api/Tickets/${id}`, {
+      cache: "no-store",
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to get ticket.");
+    if (!res.ok) {
+      throw new Error("Failed to fetch topic");
+    }
+
+    return res.json();
+  } catch (error) {
+    console.log(error);
   }
-  return res.json();
 };
 
+let updateTicketData = {};
 const TicketPage = async ({ params }) => {
-  const EDITEMODE = params.id === "new" ? false : true;
-  let updateTicketData = {};
-  if (EDITEMODE) {
+  const EDITMODE = params.id === "new" ? false : true;
+
+  if (EDITMODE) {
     updateTicketData = await getTicketById(params.id);
     updateTicketData = updateTicketData.foundTicket;
   } else {
     updateTicketData = {
-      _d: "new",
+      _id: "new",
     };
   }
   return <TicketFrom ticket={updateTicketData} />;
